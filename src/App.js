@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { TodoProvider } from './context/TodoContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Checklist from './pages/Checklist';
+import CreateChecklist from './pages/CreateChecklist';
+import ChecklistDetail from './pages/ChecklistDetail';
+import CreateItem from './pages/CreateItem';
+import ItemDetail from './pages/ItemDetail';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <TodoProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/checklists" element={<Checklist />} />
+          <Route path="/checklists/new" element={<CreateChecklist />} />
+          <Route path="/checklists/:id" element={<ChecklistDetail />} />
+          <Route path="/checklists/:id/new-item" element={<CreateItem />} />
+          <Route path="/checklists/:id/item/:itemId" element={<ItemDetail />} />
+        </Routes>
+      </Router>
+    </TodoProvider >
   );
-}
+};
 
 export default App;
