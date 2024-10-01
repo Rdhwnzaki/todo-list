@@ -5,6 +5,10 @@ export const TodoContext = createContext();
 export const TodoProvider = ({ children }) => {
     const [checklists, setChecklists] = useState([]);
 
+    const addChecklist = (newChecklist) => {
+        setChecklists(prevChecklists => [...prevChecklists, { ...newChecklist, items: [] }]);
+    };
+
     const removeChecklist = (id) => {
         setChecklists(prevChecklists => prevChecklists.filter(cl => cl.id !== id));
     };
@@ -47,7 +51,7 @@ export const TodoProvider = ({ children }) => {
     };
 
     return (
-        <TodoContext.Provider value={{ checklists, setChecklists, removeChecklist, addItemToChecklist, removeItemFromChecklist, updateItemStatus }}>
+        <TodoContext.Provider value={{ checklists, setChecklists, removeChecklist, addItemToChecklist, removeItemFromChecklist, updateItemStatus, addChecklist }}>
             {children}
         </TodoContext.Provider>
     );

@@ -2,9 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TodoContext } from '../../context/TodoContext';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ChecklistDetail = () => {
-    const { removeItemFromChecklist, updateItemStatus } = useContext(TodoContext);
+    const { setChecklists } = useContext(TodoContext);
     const { id } = useParams();
     const [checklist, setChecklist] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -20,7 +22,6 @@ const ChecklistDetail = () => {
                     },
                 });
                 console.log(response);
-
                 setChecklist(response.data);
             } catch (err) {
                 console.error('Error fetching checklist:', err);
@@ -33,8 +34,26 @@ const ChecklistDetail = () => {
         fetchChecklist();
     }, [id]);
 
-    const toggleItemStatus = (itemId, completed) => {
-        updateItemStatus(parseInt(id), itemId, !completed);
+    const handleDeleteItem = async (itemId) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+        if (confirmDelete) {
+            try {
+                const token = localStorage.getItem('token');
+                await axios.delete(`http://94.74.86.174:8080/api/checklist/${id}/item/${itemId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setChecklist((prevChecklist) => ({
+                    ...prevChecklist,
+                    data: prevChecklist.data.filter(item => item.id !== itemId)
+                }));
+                toast.success('Item deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete item:', error);
+                toast.error('Failed to delete item.');
+            }
+        }
     };
 
     if (loading) {
@@ -51,6 +70,7 @@ const ChecklistDetail = () => {
 
     return (
         <div className="container mt-5">
+            <ToastContainer />
             <h2>Details</h2>
             <Link to='/checklists'>
                 <h6>Back To My Todo</h6>
@@ -64,13 +84,8 @@ const ChecklistDetail = () => {
                             </div>
                             <div>
                                 <button
-                                    className="btn btn-warning me-2"
-                                    onClick={() => toggleItemStatus(item.id, item.completed)}>
-                                    {item.completed ? 'Mark as Pending' : 'Mark as Completed'}
-                                </button>
-                                <button
                                     className="btn btn-danger"
-                                    onClick={() => removeItemFromChecklist(parseInt(id), item.id)}>
+                                    onClick={() => handleDeleteItem(item.id)}>
                                     Delete
                                 </button>
                             </div>

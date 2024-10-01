@@ -8,19 +8,18 @@ import 'react-toastify/dist/ReactToastify.css';
 const Checklist = () => {
     const { checklists, setChecklists, removeChecklist } = useContext(TodoContext);
     const navigate = useNavigate();
+    const baseURL = 'http://94.74.86.174:8080/api/checklist';
 
     useEffect(() => {
         const fetchChecklists = async () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
-                    const response = await axios.get('http://94.74.86.174:8080/api/checklist', {
+                    const response = await axios.get(`${baseURL}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                     });
-                    console.log(response.data.data);
-
                     if (response.data && Array.isArray(response.data.data)) {
                         setChecklists(response.data.data);
                     } else {
@@ -41,7 +40,7 @@ const Checklist = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
-                    await axios.delete(`http://94.74.86.174:8080/api/checklist/${id}`, {
+                    await axios.delete(`${baseURL}/${id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -55,12 +54,38 @@ const Checklist = () => {
         }
     };
 
+    const updateItemStatus = async (checklistId, itemId, itemCompletionStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const response = await axios.put(`${baseURL}/${checklistId}/item/${itemId}`, { itemCompletionStatus }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                console.log(response);
+
+
+                if (response.status === 200) {
+                    setChecklists(prevChecklists =>
+                        prevChecklists.map(cl =>
+                            cl.id === checklistId
+                                ? { ...cl, items: cl.items.map(item => item.id === itemId ? { ...item, itemCompletionStatus } : item) }
+                                : cl
+                        )
+                    );
+                    toast.success('Item status updated successfully!');
+                }
+            }
+        } catch (error) {
+            toast.error('Failed to update item status.');
+        }
+    };
+
     return (
         <div className="container mt-5">
             <h2>My Todo-List</h2>
-            <p style={{ cursor: "pointer" }} className='text-primary' onClick={() => {
-                navigate('/checklists/new');
-            }}>Create new</p>
+            <p style={{ cursor: "pointer" }} className='text-primary' onClick={() => navigate('/checklists/new')}>Create new</p>
             <ul className="list-group">
                 {checklists.length > 0 ? (
                     checklists.map(cl => (
@@ -72,8 +97,16 @@ const Checklist = () => {
                             {cl.items && cl.items.length > 0 ? (
                                 <ul className="list-group mt-2">
                                     {cl.items.map(item => (
-                                        <li key={item.id} className="list-group-item">
-                                            {item.name} - {item.itemCompletionStatus ? 'Completed' : 'Pending'}
+                                        <li key={item.id} className="list-group-item d-flex justify-content-between">
+                                            <span>
+                                                {item.name} - {item.itemCompletionStatus ? 'Completed' : 'Pending'}
+                                            </span>
+                                            <input
+                                                type="checkbox"
+                                                checked={item.itemCompletionStatus}
+                                                onChange={() => updateItemStatus(cl.id, item.id, !item.itemCompletionStatus)}
+                                                className="form-check-input me-2"
+                                            />
                                         </li>
                                     ))}
                                 </ul>

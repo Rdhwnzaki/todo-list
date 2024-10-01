@@ -23,13 +23,16 @@ const CreateItem = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log(response.data);
+
             addItemToChecklist(parseInt(id), response.data.data);
             setItemName('');
             setSuccess(true);
             setError(null);
-            setTimeout(() => {
-                navigate(`/checklists/${id}`)
-            }, 2000)
+            const timeoutId = setTimeout(() => {
+                navigate(`/checklists/${id}`);
+            }, 3000);
+            return () => clearTimeout(timeoutId);
         } catch (err) {
             console.error('Error adding item:', err);
             setError('Failed to add item. Please try again.');

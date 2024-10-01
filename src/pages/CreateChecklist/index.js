@@ -21,6 +21,8 @@ const CreateChecklist = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log(response.data);
+
             addChecklist(response.data);
             toast.success('Checklist created successfully!');
             setName('');
